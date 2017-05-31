@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from openerp import models
-import gc
 
-# Garbage Collector to release unreferenced memory
-class garbage_collector(models.Model):
+# EAI Client Scheduler
+class eai_client_scheduler(models.Model):
 
-    _name = 'garbage.collector'
-    _description = 'Garbage Collector'
+    _name = 'eai_client.scheduler'
+    _description = 'EAI Client Scheduler'
 
-    def run_collector(self, cr, uid, context=None):
-gc.collect()
+    def run_scheduler(self, cr, uid, context=None):
+
