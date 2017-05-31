@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="eai_client_configuration_view" model="ir.ui.view">
+            <field name="name">EAI Client Configure</field>
+            <field name="model">eai_client.config.settings</field>
+            <field name="arch" type="xml">
+                <form string="EAI Client Configure" class= "oe_form_configuration">
+                    <header>
+                        <button string="Apply" type="object" name="execute" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" type="object" name="cancel" class="oe_link"/>
+                    </header>
+                    <separator string="EAI Server"/>
+                    <group>
+                        <label for="id" string="Documents"/>
+                        <div>
+                            <div>
+                                <field name="eai_server_url" class="oe_inline"/>
+                                <label for="eai_server_url"/>
+                            </div>
+                            <div>
+                                <field name="eai_server_db" class="oe_inline"/>
+                                <label for="eai_server_db"/>
+                            </div>
+                            <div>
+                                <field name="eai_server_user" class="oe_inline"/>
+                                <label for="eai_server_user"/>
+                            </div>
+                            <div>
+                                <field name="eai_server_password" class="oe_inline"/>
+                                <label for="eai_server_password"/>
+                            </div>
+                        </div>
+                    </group>
+                </form>
+            </field>
+        </record>
+        <record id="action_eai_client_configuration" model="ir.actions.act_window">
+            <field name="name">EAI Client Configure</field>
+            <field name="res_model">eai_client.config.settings</field>
+            <field name="view_mode">form</field>
+            <field name="target">inline</field>
+        </record>
+        
+        <menuitem id="eai_client_configuration_manu" name="EAI Client" parent="base.menu_config"
+            sequence="19" action="action_knowledge_configuration"/>
+
+    </data>
+</openerp>
