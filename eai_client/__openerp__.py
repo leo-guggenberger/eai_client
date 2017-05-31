@@ -18,7 +18,7 @@ Enterprise Application Integration Client with following features:
     'category': 'Generic Modules/Others',
     'summary': 'Enterprise Application Integration Client for Odoo',
     'depends': [],
-    'data': [],
+    'data': ['data/eai_client_scheduler.xml'],
     'demo': [],
     'qweb': [],
     'js': [],
