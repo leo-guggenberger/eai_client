@@ -2,7 +2,7 @@
 <openerp>
     <data noupdate="1">
         
-        <!-- EAI Client Scheduler Definition -->
+        <!-- Scheduler Definition -->
         <record forcecreate="True" id="ir_cron_scheduler_action" model="ir.cron">
             <field name="name">EAI Client Scheduler</field>
             <field eval="True" name="active"/>
