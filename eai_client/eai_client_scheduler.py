@@ -12,15 +12,15 @@ class eai_client_scheduler(models.Model):
 
     def run_scheduler(self, cr, uid, context=None):
         # Step 1: Produkte ausspielen
-        #product_ids = self.pool['product.template'].search(cr,uid, ['|',('company_id','=',company_id),('active','=','true'),('sale_ok','=','true')], context=context)
+        company_id = self.pool.get('res.users').browse(cr, uid, uid, context=context).company_id.id
+        product_ids = self.pool['product.template'].search(cr,uid, ['|',('company_id','=',company_id),('active','=','true'),('sale_ok','=','true')], context=context)
         message_name = 'TEST Produktmessage'
-        document_name = 'TEST Produktdokument'
-        document_text = 'TEST Dokumentinhalt'
+        document_name = 'Product External IDs'
+        document_text = get_external_id ( cr , uid , product_ids , *args , **kwargs ) 
         eai_server_messageid = self._message_create(cr, uid, context=context, message_name, document_name, document_text)
     
     def _message_create(self, cr, uid, context=None, message_name, document_name, document_text):
         # Configuration einlesen
-        company_id = self.pool.get('res.users').browse(cr, uid, uid, context=context).company_id.id
         eai_server_url = self.pool.get('eai_client.config.settings').browse(cr, uid, uid, context=context).eai_server_url
         eai_server_db = self.pool.get('eai_client.config.settings').browse(cr, uid, uid, context=context).eai_server_db
         eai_server_user = self.pool.get('eai_client.config.settings').browse(cr, uid, uid, context=context).eai_server_user
