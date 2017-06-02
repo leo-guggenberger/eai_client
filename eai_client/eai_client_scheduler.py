@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from openerp import models
+from fnmatch import fnmatch,fnmatchcase
+from lxml import etree
 import xmlrpclib
 
 # EAI Client Scheduler
@@ -43,3 +45,40 @@ class eai_client_scheduler(models.Model):
             'document_text': document_text'
         }])
         return eai_server_messageid
+    
+    def _export_xml(lines):
+        document = etree.Element('openerp')
+        data = etree.SubElement(document,'data')
+
+        for line in lines:
+            if line.id:
+                k,id = line.get_external_id().items()[0] if line.get_external_id() else 0,"%s-%s" % (line._name,line.id)
+                _logger.info("Reporting Block id = %s" % id)          
+                record = etree.SubElement(data,'record',id=id,model=line._name)
+                names = [name for name in line.fields_get().keys() if fnmatch(name,'in_group*')] + [name for name in line.fields_get().keys() if fnmatch(name,'sel_groups*')]
+                for field,values in line.fields_get().items():
+                    if not field in ['create_date','nessage_ids','id','write_date','create_uid','__last_update','write_uid',] + names:
+                        if values.get('type') in ['boolean','char','text','float','integer','selection','date','datetime']:
+                            _logger.info("Simple field %s field %s values %s" % (values.get('type'),field,values))
+                            try:
+                                etree.SubElement(record,'field',name = field).text = "%s" % eval('line.%s' % field)
+                            except:
+                                pass
+                        elif values.get('type') in ['many2one']:
+                            if eval('line.%s' % field):                                     
+                                k,id = eval('line.%s.get_external_id().items()[0]' % field) if eval('line.%s.get_external_id()' % field) else (0,"%s-%s" % (eval('line.%s._name' % field),eval('line.%s.id' % field)))
+                                if id == "":
+                                    id = "%s-%s" % (eval('line.%s._name' % field),eval('line.%s.id' % field))
+                                etree.SubElement(record,'field',name=field,ref="%s" % id)
+                        elif values.get('type') in ['one2many']: 
+                            pass
+                        elif values.get('type') in ['many2many']:
+                            m2mvalues = []
+                            for val in line:
+                                id,external_id = 0,'' if not val.get_external_id() else val.get_external_id().items()[0]
+                                _logger.info("External id %s -> %s" % (id,external_id[1]))
+                                if len(external_id)>0:
+                                    m2mvalues.append("(4, ref('%s'))" % external_id[1])
+                            if len(m2mvalues)>0:
+                                etree.SubElement(record,'field',name=field,eval="[%s]" % (','.join(m2mvalues)))
+        return document
