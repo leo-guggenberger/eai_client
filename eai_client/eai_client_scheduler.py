@@ -22,10 +22,15 @@ class eai_client_scheduler(models.Model):
         eai_server_models = xmlrpclib.ServerProxy('{}/xmlrpc/2/common'.format(eai_server_url))
         eai_server_uid = eai_server_models.authenticate(eai_server_db, eai_server_user, eai_server_password, {})
         eai_server_models.execute_kw(eai_server_db, eai_server_uid, eai_server_password,'eai_server.messages', 'check_access_rights', ['create'], {'raise_exception': False})
-        eai_serverid = eai_server_models.execute_kw(eai_server_db, eai_server_uid, eai_server_password, 'eai_server.messages', 'create', [{
+        eai_server_messageid = eai_server_models.execute_kw(eai_server_db, eai_server_uid, eai_server_password, 'eai_server.messages', 'create', [{
             'name': 'Test',
             'direction': 'outgoing',
             'sender_id': 'Sender',
             'receiver_id': 'Receiver',
-            'state': 'created',
+            'state': 'created'
+        }])
+        eai_server_documentid = eai_server_models.execute_kw(eai_server_db, eai_server_uid, eai_server_password, 'eai_server.documents', 'create', [{
+            'message_id': eai_server_messageid
+            'name': 'Test',
+            'document_text': 'document content'
         }])
