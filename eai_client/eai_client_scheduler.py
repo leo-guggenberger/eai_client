@@ -5,6 +5,7 @@ from openerp import models
 from fnmatch import fnmatch,fnmatchcase
 from lxml import etree
 import xmlrpclib
+import json
 
 # EAI Client Scheduler
 class eai_client_scheduler(models.Model):
@@ -18,6 +19,12 @@ class eai_client_scheduler(models.Model):
         message_name = 'TEST Produktmessage'
         document_name = 'TEST Produktdokument'
         document_text = 'TEST Dokumentinhalt'
+        
+        data = json.loads(data)
+        model = data.get('model', [])
+        rows = data.get('rows', [])
+        document = etree.tostring(_export_xml(_get_related(request.registry[model].browse(request.cr,request.uid,rows),0)),pretty_print=True,encoding="utf-8")
+
         eai_server_messageid = self._message_create(cr, uid, context=context, message_name, document_name, document_text)
     
     def _message_create(self, cr, uid, context=None, message_name, document_name, document_text):
@@ -52,14 +59,12 @@ class eai_client_scheduler(models.Model):
 
         for line in lines:
             if line.id:
-                k,id = line.get_external_id().items()[0] if line.get_external_id() else 0,"%s-%s" % (line._name,line.id)
-                _logger.info("Reporting Block id = %s" % id)          
+                k,id = line.get_external_id().items()[0] if line.get_external_id() else 0,"%s-%s" % (line._name,line.id)   
                 record = etree.SubElement(data,'record',id=id,model=line._name)
                 names = [name for name in line.fields_get().keys() if fnmatch(name,'in_group*')] + [name for name in line.fields_get().keys() if fnmatch(name,'sel_groups*')]
                 for field,values in line.fields_get().items():
                     if not field in ['create_date','nessage_ids','id','write_date','create_uid','__last_update','write_uid',] + names:
                         if values.get('type') in ['boolean','char','text','float','integer','selection','date','datetime']:
-                            _logger.info("Simple field %s field %s values %s" % (values.get('type'),field,values))
                             try:
                                 etree.SubElement(record,'field',name = field).text = "%s" % eval('line.%s' % field)
                             except:
@@ -76,9 +81,23 @@ class eai_client_scheduler(models.Model):
                             m2mvalues = []
                             for val in line:
                                 id,external_id = 0,'' if not val.get_external_id() else val.get_external_id().items()[0]
-                                _logger.info("External id %s -> %s" % (id,external_id[1]))
                                 if len(external_id)>0:
                                     m2mvalues.append("(4, ref('%s'))" % external_id[1])
                             if len(m2mvalues)>0:
                                 etree.SubElement(record,'field',name=field,eval="[%s]" % (','.join(m2mvalues)))
         return document
+    
+    def _get_related(models,depth):
+        objects = set()
+        if depth < 4:
+            for model in models:
+                for field,values in model.fields_get().items(): 
+                    if not field in ['create_date','nessage_ids','id','write_date','create_uid','__last_update','write_uid']:
+                        if values.get('type') in ['many2one']:
+                            for related in get_related(eval("model.%s" % field),depth+1):
+                                objects.add(related)
+                        if values.get('type') in ['many2many']:
+                            for related in get_related(eval("model.%s" % field),depth+1):
+                                objects.add(related)
+                objects.add(model)
+        return list(objects)
