@@ -13,9 +13,12 @@ class eai_client_scheduler(models.Model):
     def run_scheduler(self, cr, uid, context=None):
         # Step 1: Produkte ausspielen
         #product_ids = self.pool['product.template'].search(cr,uid, ['|',('company_id','=',company_id),('active','=','true'),('sale_ok','=','true')], context=context)
-        eai_server_messageid = self._message_create(cr, uid, context=context)
+        message_name = 'TEST Produktmessage'
+        document_name = 'TEST Produktdokument'
+        document_text = 'TEST Dokumentinhalt'
+        eai_server_messageid = self._message_create(cr, uid, context=context, message_name, document_name, document_text)
     
-    def _message_create(self, cr, uid, context=None):
+    def _message_create(self, cr, uid, context=None, message_name, document_name, document_text):
         # Configuration einlesen
         company_id = self.pool.get('res.users').browse(cr, uid, uid, context=context).company_id.id
         eai_server_url = self.pool.get('eai_client.config.settings').browse(cr, uid, uid, context=context).eai_server_url
@@ -28,7 +31,7 @@ class eai_client_scheduler(models.Model):
         eai_server_uid = eai_server_models.authenticate(eai_server_db, eai_server_user, eai_server_password, {})
         eai_server_models.execute_kw(eai_server_db, eai_server_uid, eai_server_password,'eai_server.messages', 'check_access_rights', ['create'], {'raise_exception': False})
         eai_server_messageid = eai_server_models.execute_kw(eai_server_db, eai_server_uid, eai_server_password, 'eai_server.messages', 'create', [{
-            'name': 'Test',
+            'name': message_name,
             'direction': 'outgoing',
             'sender_id': 'Sender',
             'receiver_id': 'Receiver',
@@ -36,7 +39,7 @@ class eai_client_scheduler(models.Model):
         }])
         eai_server_documentid = eai_server_models.execute_kw(eai_server_db, eai_server_uid, eai_server_password, 'eai_server.documents', 'create', [{
             'message_id': eai_server_messageid
-            'name': 'Test',
-            'document_text': 'document content'
+            'name': document_name,
+            'document_text': document_text'
         }])
         return eai_server_messageid
