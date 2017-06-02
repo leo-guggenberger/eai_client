@@ -34,3 +34,4 @@ class eai_client_scheduler(models.Model):
             'name': 'Test',
             'document_text': 'document content'
         }])
+        return {}
