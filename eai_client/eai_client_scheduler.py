@@ -16,6 +16,7 @@ class eai_client_scheduler(models.Model):
         product_ids = self.pool['product.template'].search(cr,uid, ['|',('company_id','=',company_id),('active','=','true'),('sale_ok','=','true')], context=context)
         message_name = 'TEST Produktmessage'
         document_name = 'Product External IDs'
+        document_type = 'external_id'
         document_text = get_external_id( cr , uid , product_ids , *args , **kwargs ) 
         eai_server_messageid = self._message_create(cr, uid, context=context, message_name, document_name, document_text)
     
@@ -41,6 +42,7 @@ class eai_client_scheduler(models.Model):
         eai_server_documentid = eai_server_models.execute_kw(eai_server_db, eai_server_uid, eai_server_password, 'eai_server.documents', 'create', [{
             'message_id': eai_server_messageid
             'name': document_name,
+            'type': document_type,
             'document_text': document_text'
         }])
         return eai_server_messageid
