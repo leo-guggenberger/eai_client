@@ -21,6 +21,7 @@ class eai_client_scheduler(models.Model):
     
     def _message_create(self, cr, uid, context=None, message_name, document_name, document_text):
         # Configuration einlesen
+        eai_client_name = self.pool.get('eai_client.config.settings').browse(cr, uid, uid, context=context).eai_client_name
         eai_server_url = self.pool.get('eai_client.config.settings').browse(cr, uid, uid, context=context).eai_server_url
         eai_server_db = self.pool.get('eai_client.config.settings').browse(cr, uid, uid, context=context).eai_server_db
         eai_server_user = self.pool.get('eai_client.config.settings').browse(cr, uid, uid, context=context).eai_server_user
@@ -33,7 +34,7 @@ class eai_client_scheduler(models.Model):
         eai_server_messageid = eai_server_models.execute_kw(eai_server_db, eai_server_uid, eai_server_password, 'eai_server.messages', 'create', [{
             'name': message_name,
             'direction': 'outgoing',
-            'sender_id': 'Sender',
+            'sender_id': eai_client_name,
             'receiver_id': 'Receiver',
             'state': 'created'
         }])
